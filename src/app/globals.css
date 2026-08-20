@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+/*
+  Gestaltungsgrundlage fuer alle Seiten.
+
+  Die Seiten werden draussen bei Sonnenschein gelesen, teils aus ein bis zwei
+  Metern Entfernung. Deshalb: helles Theme, sehr hohe Kontraste, grosse Schrift.
+  Bewusst kein Dark Mode - draussen ist hell besser lesbar.
+*/
+
+:root {
+  color-scheme: light;
+
+  --farbe-grund: #f4f4f5;   /* Seitenhintergrund */
+  --farbe-flaeche: #ffffff; /* Karten */
+  --farbe-linie: #d4d4d8;
+  --farbe-text: #09090b;
+  --farbe-schwach: #52525b; /* Zeitstempel, Metainfos */
+
+  /* Nur zwei Akzente. Kein Gruen/Rot: Rot-Gruen-Schwaeche ist verbreitet,
+     und der Gast ist kein Fehlerzustand. */
+  --farbe-heim: #1d4ed8;
+  --farbe-gast: #3f3f46;
+}
+
+@theme inline {
+  --color-grund: var(--farbe-grund);
+  --color-flaeche: var(--farbe-flaeche);
+  --color-linie: var(--farbe-linie);
+  --color-text: var(--farbe-text);
+  --color-schwach: var(--farbe-schwach);
+  --color-heim: var(--farbe-heim);
+  --color-gast: var(--farbe-gast);
+  --font-sans: var(--font-geist-sans);
+}
+
+body {
+  background: var(--farbe-grund);
+  color: var(--farbe-text);
+}
+
+/* Ergebniszahlen in Tabellenziffern, damit beim Aktualisieren nichts springt. */
+.zahlen {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Tastaturbedienung muss sichtbar bleiben. */
+:focus-visible {
+  outline: 3px solid var(--farbe-heim);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
