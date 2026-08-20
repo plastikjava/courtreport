@@ -77,7 +77,7 @@ spieltag
 partie
   id              uuid pk
   spieltag_id     uuid fk -> spieltag
-  platz_nr        int         -- 1..6
+  platz_nr        int         -- 1..9  (die Anlage hat 9 Plätze)
   disziplin       text        -- "Einzel 3", "Doppel 1"
   runde           text        -- einzel | doppel
   reihenfolge     int         -- für stabile Sortierung
@@ -133,7 +133,7 @@ Aufbau von oben nach unten:
 
 Zwei Schritte:
 
-**Schritt 1 — Platzauswahl:** große Kacheln 1 bis 6. Wird die Seite über einen QR-Code mit `?platz=5` geöffnet, wird dieser Schritt übersprungen.
+**Schritt 1 — Platzauswahl:** große Kacheln 1 bis 9. Wird die Seite über einen QR-Code mit `?platz=5` geöffnet, wird dieser Schritt übersprungen.
 
 **Auflösung Platz → Partie (wichtig):** Der QR-Code codiert **nur die Platznummer**, niemals eine Partie-ID. Die Schilder hängen dauerhaft am Zaun, während die Partie auf einem Platz mehrfach am Tag wechselt. Die App ermittelt beim Öffnen selbst, welche Partie gemeint ist:
 
@@ -288,3 +288,19 @@ Was das für den Code heißt:
 ---
 
 Fang mit Etappe 1 an.
+
+---
+
+## Stand der Umsetzung
+
+**Etappe 1 ist gebaut** (Stand 20.08.2026). Was steht:
+
+- Next.js 16 mit App Router, TypeScript, Tailwind 4; Deployment-Vorbereitung für Vercel
+- Datenbankschema in `supabase/schema.sql`, Testdaten in `supabase/seed.sql`
+- `/live` in minimaler Fassung: Gesamtstand, Platzkarten, Sortierung, Zeitstempel
+- Hilfsfunktionen in `src/lib`: `anzeige.ts` (Bezeichnungen der Beteiligten), `stand.ts` (Gesamtstand aus beendeten Partien), `zeit.ts` (Relativzeit und 20-Minuten-Regel)
+- Die manuellen Einrichtungsschritte stehen in `SETUP.md`
+
+**Korrektur zum Text oben:** Die Anlage hat **9 Plätze**, nicht 6.
+
+Noch offen: Etappe 2 bis 5 wie oben beschrieben.
