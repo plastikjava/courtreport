@@ -27,15 +27,15 @@ Beide Dateien lassen sich gefahrlos mehrfach ausführen. `seed.sql` löscht die 
 
 ## 3. Zugangsdaten kopieren
 
-**Project Settings → API Keys**. Du brauchst drei Werte:
+**Project Settings → API Keys**, Reiter *Publishable and secret API keys*. Du brauchst drei Werte:
 
 | In Supabase | Trägst du ein als |
 |---|---|
-| Project URL | `NEXT_PUBLIC_SUPABASE_URL` |
-| `anon` / `public` key | `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
-| `service_role` key (erst nach Klick auf *Reveal* sichtbar) | `SUPABASE_SERVICE_ROLE_KEY` |
+| **Project URL** (unter *Data API*) | `NEXT_PUBLIC_SUPABASE_URL` |
+| **Publishable key** `sb_publishable_…` | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` |
+| **Secret key** `sb_secret_…` (erst nach Klick auf das Augensymbol sichtbar) | `SUPABASE_SECRET_KEY` |
 
-> **Zum service_role-Key:** das ist ein Generalschlüssel, der sämtliche Zugriffsregeln der Datenbank umgeht. Er gehört ausschließlich in `.env.local` auf deinem Rechner und in die Vercel-Einstellungen. Nie in eine Datei, die ins Repo geht, nie in eine Chatnachricht, nie in den Browser. Die beiden anderen Werte sind unkritisch und dürfen öffentlich sein.
+> **Zum Secret Key:** das ist ein Generalschlüssel, der sämtliche Zugriffsregeln der Datenbank umgeht. Er gehört ausschließlich in `.env.local` auf deinem Rechner und in die Vercel-Einstellungen. Nie in eine Datei, die ins Repo geht, nie in eine Chatnachricht, nie in den Browser. Die beiden anderen Werte sind unkritisch und dürfen öffentlich sein.
 
 Die Werte trägst du in die Datei **`.env.local`** im Projektordner ein — die liegt schon dort und ist von Git ausgenommen.
 
@@ -69,8 +69,8 @@ git push -u origin main
    | Name | Wert |
    |---|---|
    | `NEXT_PUBLIC_SUPABASE_URL` | wie in `.env.local` |
-   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | wie in `.env.local` |
-   | `SUPABASE_SERVICE_ROLE_KEY` | wie in `.env.local` |
+   | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | wie in `.env.local` |
+   | `SUPABASE_SECRET_KEY` | wie in `.env.local` |
    | `NEXT_PUBLIC_BASE_URL` | vorerst leer lassen, siehe Punkt 3 |
    | `CLUB_PIN` | vierstellige Zahl, die im Club herumgereicht wird |
    | `ADMIN_PIN` | längere Zahl, nur für die Handvoll Leute, die Spieltage anlegen |

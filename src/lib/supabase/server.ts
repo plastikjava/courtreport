@@ -2,7 +2,7 @@ import 'server-only';
 import { createClient } from '@supabase/supabase-js';
 
 /**
- * Schreib-Client mit dem service_role-Key.
+ * Schreib-Client mit dem Secret Key.
  *
  * Dieser Key umgeht die Row-Level-Security und darf deshalb niemals im
  * Browser landen. Das "server-only" oben laesst den Build fehlschlagen,
@@ -12,16 +12,16 @@ import { createClient } from '@supabase/supabase-js';
  */
 export function supabaseSchreiben() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const secretKey = process.env.SUPABASE_SECRET_KEY;
 
-  if (!url || !serviceKey) {
+  if (!url || !secretKey) {
     throw new Error(
-      'NEXT_PUBLIC_SUPABASE_URL oder SUPABASE_SERVICE_ROLE_KEY fehlt. ' +
+      'NEXT_PUBLIC_SUPABASE_URL oder SUPABASE_SECRET_KEY fehlt. ' +
         'Bitte in .env.local eintragen (siehe SETUP.md).',
     );
   }
 
-  return createClient(url, serviceKey, {
+  return createClient(url, secretKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
