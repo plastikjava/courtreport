@@ -127,6 +127,13 @@ revoke insert, update, delete on public.partie   from anon, authenticated;
 
 revoke all on public.aenderung from anon, authenticated;
 
+-- Die Server-Rolle braucht volle Rechte: ueber sie laufen ab Etappe 3 alle
+-- Schreibvorgaenge. Sie ist nur serverseitig erreichbar, nie im Browser.
+grant usage on schema public to service_role;
+grant all on public.spieltag  to service_role;
+grant all on public.partie    to service_role;
+grant all on public.aenderung to service_role;
+
 -- Fuer "aenderung" gibt es bewusst keine Policy:
 -- das Audit-Log ist von aussen weder les- noch schreibbar.
 
