@@ -1,4 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+
+// Eine Instanz genuegt. Das Realtime-Abo braucht eine stabile Verbindung,
+// deshalb wird der Client zwischengespeichert statt bei jedem Aufruf neu gebaut.
+let zwischenspeicher: SupabaseClient | null = null;
 
 /**
  * Lese-Client mit dem oeffentlichen Publishable Key.
@@ -7,7 +11,9 @@ import { createClient } from '@supabase/supabase-js';
  * damit ausschliesslich SELECT auf Spieltage und Partien, kein Schreiben.
  * Wird auf /live und /archiv benutzt und ab Etappe 2 fuer Realtime.
  */
-export function supabaseLesen() {
+export function supabaseLesen(): SupabaseClient {
+  if (zwischenspeicher) return zwischenspeicher;
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
@@ -18,9 +24,11 @@ export function supabaseLesen() {
     );
   }
 
-  return createClient(url, publishableKey, {
+  zwischenspeicher = createClient(url, publishableKey, {
     auth: { persistSession: false, autoRefreshToken: false },
+    realtime: { params: { eventsPerSecond: 5 } },
   });
+  return zwischenspeicher;
 }
 
 /** Sind die Supabase-Zugangsdaten hinterlegt? Wird auf /live geprueft, um
