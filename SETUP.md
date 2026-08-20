@@ -1,4 +1,5 @@
-# Einrichtung — Etappe 1
+| `CLUB_PIN` | vierstellige Zahl, die im Club herumgereicht wird |
+   | `ADMIN_PIN` | längere Zahl, nur für die Handvoll Leute, die Spieltage anlegen |# Einrichtung — Etappe 1
 
 Alles, was du selbst in Supabase, GitHub und Vercel klicken musst.
 Reihenfolge einhalten, dann greift jeder Schritt in den nächsten.
@@ -96,3 +97,18 @@ Erst wenn alles läuft — die QR-Schilder werden erst danach gedruckt.
 4. Zum Schluss `NEXT_PUBLIC_BASE_URL` auf `https://live.euredomain.de` umstellen und neu deployen.
 
 Ab dann ändert sich an der App nichts mehr, wenn die Domain wechselt — sämtliche QR-Codes werden aus dieser einen Variable gebaut.
+
+---
+
+## 8. Die beiden PINs
+
+Ab Etappe 3 werden sie tatsächlich abgefragt:
+
+- **`CLUB_PIN`** — vier Ziffern, wird einmalig vor dem ersten Eintragen abgefragt und danach im Browser gemerkt. Die Zahl kannst du im Club herumreichen oder auf die laminierten Schilder am Zaun schreiben.
+- **`ADMIN_PIN`** — länger, für die Handvoll Leute, die Spieltage anlegen. Wird ab Etappe 4 gebraucht.
+
+Beide liegen in den Umgebungsvariablen und sind ohne neues Deployment änderbar — nach dem Ändern einmal *Redeploy* auslösen.
+
+Solange in Vercel keine `CLUB_PIN` steht, zeigt `/eingeben` einen entsprechenden Hinweis, statt jede Eingabe wortlos abzuweisen.
+
+**Eine ehrliche Einschränkung:** Vier Ziffern sind kein echter Schutz. Wer es darauf anlegt, probiert 10.000 Möglichkeiten in kurzer Zeit durch. Das ist die bewusste Abwägung aus dem Projekt-Prompt — die Hürde soll niedrig bleiben. Die PIN hält Zufallsfunde und Spaßvögel ab, nicht jemanden mit Absicht. Falls doch einmal Unsinn eingetragen wird: jede Änderung steht mit Vorher und Nachher im Protokoll und lässt sich zurücknehmen.
