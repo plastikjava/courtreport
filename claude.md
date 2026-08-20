@@ -293,14 +293,26 @@ Fang mit Etappe 1 an.
 
 ## Stand der Umsetzung
 
-**Etappe 1 ist gebaut** (Stand 20.08.2026). Was steht:
-
-- Next.js 16 mit App Router, TypeScript, Tailwind 4; Deployment-Vorbereitung für Vercel
-- Datenbankschema in `supabase/schema.sql`, Testdaten in `supabase/seed.sql`
-- `/live` in minimaler Fassung: Gesamtstand, Platzkarten, Sortierung, Zeitstempel
-- Hilfsfunktionen in `src/lib`: `anzeige.ts` (Bezeichnungen der Beteiligten), `stand.ts` (Gesamtstand aus beendeten Partien), `zeit.ts` (Relativzeit und 20-Minuten-Regel)
-- Die manuellen Einrichtungsschritte stehen in `SETUP.md`
+Stand 20.08.2026. **Etappe 1 bis 3 sind gebaut, deployt und geprüft.**
 
 **Korrektur zum Text oben:** Die Anlage hat **9 Plätze**, nicht 6.
 
-Noch offen: Etappe 2 bis 5 wie oben beschrieben.
+### Was läuft
+
+- Next.js 16 (App Router, TypeScript), Tailwind 4, Supabase, Deployment auf Vercel
+- `/live` vollständig: Gesamtstand, Platzkarten, Realtime-Abo, Polling alle 8 Sekunden nur wenn Realtime nicht trägt, Sicherheitsabruf einmal pro Minute, mitlaufende Zeitstempel, Ausgrauen nach 20 Minuten, Hervorhebung bei Satzball, Matchball und Match-Tiebreak
+- `/eingeben` vollständig: Platzkacheln 1–9, Auflösung Platz → Partie in allen fünf Fällen, Stepper, Game-Buttons, Punkt-Modus, Club-PIN, Rückgängig, „Partie beendet", Spitzname
+- Alle Schreibzugriffe über Server Actions in `src/app/eingeben/aktionen.ts` mit serverseitiger PIN-Prüfung; jede Änderung mit Vorher und Nachher im Audit-Log
+
+### Wichtige Festlegungen im Code
+
+- `src/lib/anzeige.ts` → `beteiligte()` ist die **einzige** Stelle, die „Hochheim" und „Gast" bestimmt. Nie einen Vereinsnamen in eine Komponente schreiben.
+- `src/lib/stand.ts` → Gesamtstand wird immer aus den beendeten Partien gerechnet, nie gespeichert.
+- `src/lib/tennis.ts` → vollständige Zählweise, gegen 15 Fälle geprüft. Ablagekonvention: Der **letzte Eintrag in `saetze` ist der laufende Satz**, solange er nicht entschieden ist. Tiebreak-Punkte stehen in `game_heim`/`game_gast`, der Satz bleibt bei 6:6. Beim Match-Tiebreak enthält `saetze` nur die beiden regulären Sätze.
+- Eine veraltete Partie wird **nicht** hervorgehoben — ein 40 Minuten alter Satzball ist kein Grund mehr aufzustehen.
+
+### Offen
+
+- **Etappe 4** — `/admin`: Spieltag anlegen, Partien generieren und auf Plätze verteilen, „Doppel starten", korrigieren, Änderungshistorie, archivieren
+- **Etappe 5** — PWA-Manifest, Offline-Queue, `/admin/qr` mit 9 Platzschildern plus Terrassenschild, Kiosk-Modus `?tv=1`, `/archiv`
+- Bei 9 Plätzen und 4 oder 6 Einzeln ist die Platzverteilung noch nicht festgelegt. Vorschlag: Standard ab Platz 1 aufwärts, beim Anlegen änderbar. Wird in Etappe 4 geklärt.
