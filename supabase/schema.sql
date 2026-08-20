@@ -115,6 +115,18 @@ create policy "partie oeffentlich lesbar"
   to anon, authenticated
   using (true);
 
+-- Tabellenrechte explizit vergeben, statt sie pauschal zu erben.
+-- Wirkt zusaetzlich zu RLS: die oeffentlichen Rollen bekommen ausschliesslich
+-- Leserechte, und das Audit-Log ueberhaupt keine.
+grant usage on schema public to anon, authenticated;
+
+grant select on public.spieltag to anon, authenticated;
+grant select on public.partie   to anon, authenticated;
+revoke insert, update, delete on public.spieltag from anon, authenticated;
+revoke insert, update, delete on public.partie   from anon, authenticated;
+
+revoke all on public.aenderung from anon, authenticated;
+
 -- Fuer "aenderung" gibt es bewusst keine Policy:
 -- das Audit-Log ist von aussen weder les- noch schreibbar.
 
