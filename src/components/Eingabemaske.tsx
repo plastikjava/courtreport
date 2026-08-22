@@ -6,7 +6,13 @@ import { aenderungZurueck, partieBeenden, standSpeichern } from "@/app/eingeben/
 import { PinAbfrage } from "@/components/PinAbfrage";
 import { SpitznameFrage } from "@/components/SpitznameFrage";
 import { beteiligte, platzTitel } from "@/lib/anzeige";
-import { gespeichertePin, gespeicherterName, pinVergessen } from "@/lib/lokal";
+import {
+  gespeichertePin,
+  gespeicherterName,
+  nachNamenGefragt,
+  nameSchonGefragt,
+  pinVergessen,
+} from "@/lib/lokal";
 import {
   angleichen,
   naechsterPunkt,
@@ -17,6 +23,7 @@ import {
 import type { Partie, Spieltag } from "@/lib/typen";
 
 type Meldung = { art: "gut" | "schlecht"; text: string } | null;
+type Wartend = "speichern" | "beenden" | null;
 
 /**
  * Schritt 2: den Stand eintragen.
@@ -25,11 +32,17 @@ type Meldung = { art: "gut" | "schlecht"; text: string } | null;
  * Tafel und tippt ab. Deshalb "aktuellen Stand setzen" statt "Punkt hinzufuegen".
  * Der Punkt-Modus weiter unten ist die Ausnahme fuer alle, die sich laenger an
  * den Platz setzen.
+ *
+ * Wichtig fuer die hinteren Plaetze mit schlechtem Empfang: Die Maske wird
+ * vollstaendig vom Server ausgeliefert und ist sofort lesbar. Nach der PIN wird
+ * erst gefragt, wenn wirklich gespeichert werden soll - nicht davor.
  */
 export function Eingabemaske({ partie, spieltag }: { partie: Partie; spieltag: Spieltag }) {
   const namen = beteiligte(partie);
 
-  const [pin, setPin] = useState<string | null>(null);
+  const [pin, setPin] = useState("");
+  const [pinFrage, setPinFrage] = useState(false);
+  const [wartend, setWartend] = useState<Wartend>(null);
   const [name, setName] = useState("");
   const [nameFragen, setNameFragen] = useState(false);
   const [stand, setStand] = useState<Spielstand>(() => spielstandVon(partie));
@@ -42,20 +55,6 @@ export function Eingabemaske({ partie, spieltag }: { partie: Partie; spieltag: S
     setPin(gespeichertePin());
     setName(gespeicherterName());
   }, []);
-
-  // Erster Rendervorgang: aus localStorage ist noch nichts gelesen.
-  if (pin === null) return null;
-  if (pin === "") return <PinAbfrage fertig={(neu) => setPin(neu)} />;
-  if (nameFragen) {
-    return (
-      <SpitznameFrage
-        fertig={(neu) => {
-          setName(neu);
-          setNameFragen(false);
-        }}
-      />
-    );
-  }
 
   const aendern = (naechster: Spielstand) => {
     setStand(angleichen(naechster));
@@ -76,11 +75,24 @@ export function Eingabemaske({ partie, spieltag }: { partie: Partie; spieltag: S
     punktSetzen(seite, String(Math.max(0, Math.min(99, jetzt + delta))));
   };
 
-  async function speichern() {
+  /** Nach dem ersten Speichern einmal nach dem Spitznamen fragen. Freiwillig. */
+  const vielleichtNachNamenFragen = () => {
+    if (nameSchonGefragt()) return;
+    nachNamenGefragt();
+    setNameFragen(true);
+  };
+
+  async function speichern(pinWert: string = pin) {
+    if (!pinWert) {
+      setWartend("speichern");
+      setPinFrage(true);
+      return;
+    }
+
     setLaeuft(true);
     const ergebnis = await standSpeichern({
       partieId: partie.id,
-      pin: pin as string,
+      pin: pinWert,
       spitzname: name,
       saetze: stand.saetze,
       gameHeim: stand.game_heim,
@@ -103,11 +115,18 @@ export function Eingabemaske({ partie, spieltag }: { partie: Partie; spieltag: S
     setStatus(ergebnis.partie.status);
     setLetzteAenderung(ergebnis.aenderungId);
     setMeldung({ art: "gut", text: "Gespeichert. Die Terrasse sieht es sofort." });
+    vielleichtNachNamenFragen();
   }
 
-  async function beenden() {
+  async function beenden(pinWert: string = pin) {
+    if (!pinWert) {
+      setWartend("beenden");
+      setPinFrage(true);
+      return;
+    }
+
     setLaeuft(true);
-    const ergebnis = await partieBeenden(partie.id, pin as string, name);
+    const ergebnis = await partieBeenden(partie.id, pinWert, name);
     setLaeuft(false);
     if (!ergebnis.ok) {
       setMeldung({ art: "schlecht", text: ergebnis.fehler });
@@ -121,7 +140,7 @@ export function Eingabemaske({ partie, spieltag }: { partie: Partie; spieltag: S
   async function zurueck() {
     if (!letzteAenderung) return;
     setLaeuft(true);
-    const ergebnis = await aenderungZurueck(partie.id, letzteAenderung, pin as string, name);
+    const ergebnis = await aenderungZurueck(partie.id, letzteAenderung, pin, name);
     setLaeuft(false);
     if (!ergebnis.ok) {
       setMeldung({ art: "schlecht", text: ergebnis.fehler });
@@ -131,6 +150,32 @@ export function Eingabemaske({ partie, spieltag }: { partie: Partie; spieltag: S
     setStatus(ergebnis.partie.status);
     setLetzteAenderung(null);
     setMeldung({ art: "gut", text: "Zurückgenommen." });
+  }
+
+  if (pinFrage) {
+    return (
+      <PinAbfrage
+        fertig={(neu) => {
+          setPin(neu);
+          setPinFrage(false);
+          const offen = wartend;
+          setWartend(null);
+          if (offen === "speichern") void speichern(neu);
+          if (offen === "beenden") void beenden(neu);
+        }}
+      />
+    );
+  }
+
+  if (nameFragen) {
+    return (
+      <SpitznameFrage
+        fertig={(neu) => {
+          setName(neu);
+          setNameFragen(false);
+        }}
+      />
+    );
   }
 
   const entschieden = partieEntschieden(stand);
@@ -148,6 +193,8 @@ export function Eingabemaske({ partie, spieltag }: { partie: Partie; spieltag: S
         {spieltag.mannschaft} gegen {spieltag.gegner}
         {status === "beendet" ? " · Partie ist beendet" : ""}
       </p>
+
+      <noscript>Zum Eintragen muss JavaScript eingeschaltet sein.</noscript>
 
       <section className="mt-5">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-schwach">Sätze</h2>
@@ -270,12 +317,12 @@ export function Eingabemaske({ partie, spieltag }: { partie: Partie; spieltag: S
 
       <div className="mt-5 flex flex-wrap gap-2">
         {status !== "beendet" ? (
-          <KleinerKnopf onClick={beenden} deaktiviert={laeuft}>
+          <KleinerKnopf onClick={() => void beenden()} deaktiviert={laeuft}>
             Partie beendet
           </KleinerKnopf>
         ) : null}
         {letzteAenderung ? (
-          <KleinerKnopf onClick={zurueck} deaktiviert={laeuft}>
+          <KleinerKnopf onClick={() => void zurueck()} deaktiviert={laeuft}>
             Rückgängig
           </KleinerKnopf>
         ) : null}
@@ -288,7 +335,7 @@ export function Eingabemaske({ partie, spieltag }: { partie: Partie; spieltag: S
       <div className="fixed inset-x-0 bottom-0 border-t border-linie bg-grund px-4 py-3">
         <button
           type="button"
-          onClick={speichern}
+          onClick={() => void speichern()}
           disabled={laeuft}
           className="mx-auto block min-h-[64px] w-full max-w-xl rounded-xl bg-heim px-5 text-xl font-bold text-flaeche disabled:opacity-50"
         >
