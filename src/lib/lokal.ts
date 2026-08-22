@@ -37,3 +37,9 @@ export const namenMerken = (name: string) => {
 };
 export const nameSchonGefragt = () => lesen(NAME_GEFRAGT) === 'ja';
 export const nachNamenGefragt = () => schreiben(NAME_GEFRAGT, 'ja');
+
+const ADMIN_SCHLUESSEL = 'hochheim.adminpin';
+
+export const gespeicherteAdminPin = () => lesen(ADMIN_SCHLUESSEL);
+export const adminPinMerken = (pin: string) => schreiben(ADMIN_SCHLUESSEL, pin);
+export const adminPinVergessen = () => schreiben(ADMIN_SCHLUESSEL, '');
